@@ -49,6 +49,7 @@ graph LR
 ---
 
 ### 📊 Features
+
 - **Multi-Stage Synthesis**: Goes beyond simple summarization to provide fundamental analysis, consumer intelligence, and executive synthesis.
 - **Auto-Formatting**: Deliver reports directly to Google Docs with professional heading structures.
 - **Logging & Persistence**: Every research run is logged into Airtable for historical tracking and audit.
