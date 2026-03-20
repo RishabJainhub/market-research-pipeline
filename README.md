@@ -2,6 +2,16 @@
 
 <div align="center">
   <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0d1218,50:4c1d95,100:8b5cf6&height=220&section=header&text=AI%20Market%20Research%20Pipeline&fontSize=38&fontColor=ffffff&animation=twinkling&fontAlignY=35&desc=n8n%20Automation%20%7C%20Llama%203.1%20Synthesis%20%7C%20Perplexity%20API&descSize=16&descAlignY=55&descColor=cccccc" width="100%" />
+
+  **Enterprise-Grade AI Automation for Market Intelligence powered by n8n, Llama-3.1, and Perplexity Search API.**
+
+  <p align="center">
+    <a href="https://github.com/RishabJainhub/market-research-pipeline"><img src="https://img.shields.io/badge/n8n-FF6D5A?style=for-the-badge&logo=n8n&logoColor=white" alt="n8n"></a>
+    <a href="https://github.com/RishabJainhub/market-research-pipeline"><img src="https://img.shields.io/badge/Groq-F55036?style=for-the-badge&logo=groq&logoColor=white" alt="Groq"></a>
+    <a href="https://github.com/RishabJainhub/market-research-pipeline"><img src="https://img.shields.io/badge/Llama--3.1-4285F4?style=for-the-badge&logo=meta&logoColor=white" alt="Llama 3.1"></a>
+    <a href="https://github.com/RishabJainhub/market-research-pipeline"><img src="https://img.shields.io/badge/Perplexity-00A67E?style=for-the-badge&logo=perplexity&logoColor=white" alt="Perplexity"></a>
+    <a href="https://github.com/RishabJainhub/market-research-pipeline"><img src="https://img.shields.io/badge/Airtable-18BFFF?style=for-the-badge&logo=airtable&logoColor=white" alt="Airtable"></a>
+  </p>
 </div>
 
 ---
