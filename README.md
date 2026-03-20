@@ -17,13 +17,13 @@
 ---
 
 ### 🚀 Overview
-A production-grade AI automation pipeline built with **n8n**, **Groq LLaMA 3.3 70B**, and **Perplexity Sonar API**. This system transforms a simple Google Sheets trigger into a structured, multi-stage market intelligence report in under 60 seconds.
+A production-grade AI automation pipeline built with **n8n**, **OpenAI GPT-4o**, and **Perplexity Sonar API**. This system transforms a simple Google Sheets trigger into a structured, multi-stage market intelligence report in under 60 seconds.
 
 ### ✨ Key Results
 - ⏱️ **Speed**: <60 seconds for a full 7-section report.
 - 📉 **Efficiency**: 90% reduction in manual research effort.
-- 👥 **Adoption**: Deployed and used by 8+ active users for real-world strategy synthesis.
-- 📊 **Scalability**: Capable of processing dozens of concurrent research tasks via n8n's asynchronous workflow architecture.
+- 🧪 **Scalability**: Integrated with Google Sheets and Airtable for zero-touch batch processing.
+- 🕵️ **Real-time Accuracy**: Powered by Perplexity Sonar for zero-hallucination web intelligence.
 
 ---
 
@@ -32,8 +32,8 @@ A production-grade AI automation pipeline built with **n8n**, **Groq LLaMA 3.3 7
 ```mermaid
 graph LR
     A[Google Sheets Trigger] --> B[n8n Workflow Engine]
-    B --> C[Perplexity Search API]
-    C --> D[Groq LLaMA 3.3 70B Synthesis]
+    B --> C[Perplexity Sonar API]
+    C --> D[GPT-4o Sequential Synthesis]
     D --> E[Quality Gate / Self-Correction]
     E --> F[Google Docs / Airtable Export]
 ```
@@ -41,10 +41,10 @@ graph LR
 ---
 
 ### 🛠️ Technology Stack
-- **Orchestration**: n8n (Low-code Automation)
-- **Large Language Models**: Groq LLaMA 3.3 70B, Llama-3.1
+- **Orchestration**: n8n (Production Automation)
+- **Large Language Model**: OpenAI GPT-4o
 - **Real-time Search**: Perplexity Sonar API
-- **Data Delivery**: Google Docs, Airtable, Google Sheets
+- **Data Persistence**: Google Docs, Airtable, Google Sheets
 
 ---
 

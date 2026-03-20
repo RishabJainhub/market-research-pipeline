@@ -1,6 +1,6 @@
 # 🏗️ Architecture — Market Research Pipeline
 
-> A deep-dive into the technical design, data flow, and prompt engineering strategy behind the automated market research pipeline.
+> A deep-dive into the technical design, data flow, and prompt engineering strategy behind the automated market research pipeline using Perplexity and GPT-4o.
 
 ---
 
@@ -17,43 +17,37 @@
 
 ## System Overview
 
-The pipeline is a **16-node n8n workflow** that transforms a natural language query (e.g., *"Electric vehicles in India"*) into a structured 7-section market research report. It combines **real-time web intelligence** (Tavily) with **LLM analytical reasoning** (Groq + LLaMA 3.3 70B) through a sequential, context-building architecture.
+The pipeline is a **12-module n8n workflow** that transforms a Google Sheets trigger into a structured, multi-stage market intelligence report. It combines **real-time web intelligence** (Perplexity Sonar) with **tier-1 LLM synthesis** (OpenAI GPT-4o) through a sequential, state-building architecture.
 
 ```mermaid
 graph TD
     subgraph INPUT ["🎯 Input Layer"]
-        A[Chat Trigger] --> B[AI Agent]
-        C[Groq Chat Model] -.->|LLM Provider| B
-        B --> D[JSON Parser]
-        D --> E[Field Preparation]
-    end
-
-    subgraph SEARCH ["🔍 Search Layer"]
-        E --> F[Tavily: Market Size]
-        E --> G[Tavily: Consumer Trends]
-        F --> H[SQL Merge]
-        G --> H
+        A[Google Sheets Trigger] --> B[Perplexity Sonar API]
     end
 
     subgraph ANALYSIS ["🧠 Analysis Layer"]
-        H --> I[Context Variables]
-        I --> J[Prompt Builder 1]
-        J --> K[Groq: Market Fundamentals]
-        K --> L[Prompt Builder 2]
-        L --> M[Groq: Consumer Intelligence]
-        M --> N[Prompt Builder 3]
-        N --> O[Groq: Strategic Synthesis]
+        B --> C[GPT-4o: Market Fundamentals]
+        C --> D[GPT-4o: Consumer Intelligence]
+        D --> E[GPT-4o: Strategic Synthesis]
+    end
+
+    subgraph QUALITY ["🛡️ Quality Guard"]
+        E --> F[Report Assembly]
+        F --> G{Word Count Check}
+        G -->|Pass| H[Log as High Quality]
+        G -->|Fail| I[Flag for Review]
     end
 
     subgraph OUTPUT ["📤 Output Layer"]
-        O --> P[Report Assembly]
-        P --> Q[Gmail Delivery]
-        P --> R[Webhook Response]
+        H --> J[Create Google Doc]
+        I --> J
+        J --> K[Log to Airtable]
+        K --> L[Update Sheets Status]
     end
 
     style INPUT fill:#1a1a2e,stroke:#e63946,color:#fff
-    style SEARCH fill:#1e3a5f,stroke:#4F46E5,color:#fff
     style ANALYSIS fill:#2d1b3d,stroke:#7C3AED,color:#fff
+    style QUALITY fill:#1e3a5f,stroke:#4F46E5,color:#fff
     style OUTPUT fill:#1b3d2d,stroke:#059669,color:#fff
 ```
 
@@ -62,241 +56,68 @@ graph TD
 ## Data Flow
 
 ```
-User Input: "Electric vehicles in India"
+Trigger: New Row in Google Sheets (Industry + Geography)
          │
          ▼
 ┌─────────────────────────────────┐
-│  AI Agent (Groq LLaMA 3.3)     │
-│  Output: {"industry": "Electric │
-│  vehicles", "geography":"India"} │
+│  Perplexity Sonar API           │
+│  Real-time Market Data Layer    │
+│  (Size, Players, Trends, Risks) │
 └─────────────────────────────────┘
          │
-         ├──────────────────────────────┐
-         ▼                              ▼
-┌─────────────────────┐  ┌──────────────────────────┐
-│ Tavily Search #1    │  │ Tavily Search #2         │
-│ "EV market size     │  │ "EV consumer trends      │
-│  revenue players    │  │  behavior India 2025"    │
-│  India 2025"        │  │                          │
-│ → 5 results + AI    │  │ → 5 results + AI         │
-│   summary           │  │   summary                │
-└─────────────────────┘  └──────────────────────────┘
-         │                              │
-         └──────────┬───────────────────┘
-                    ▼
-         ┌─────────────────────┐
-         │  SQL CROSS JOIN     │
-         │  Merged context     │
-         └─────────────────────┘
-                    │
-                    ▼
-         ┌─────────────────────┐
-         │  Groq Call #1       │   Sections 1-3
-         │  Market Fundamentals│   Overview, Size, Competition
-         └─────────────────────┘
-                    │
-                    ▼
-         ┌─────────────────────┐
-         │  Groq Call #2       │   Sections 4-6
-         │  Consumer Intel     │   Drivers, Risks, Behavior
-         └─────────────────────┘
-                    │
-                    ▼
-         ┌─────────────────────┐
-         │  Groq Call #3       │   Section 7
-         │  Strategic Synthesis│   Outlook, Projections, C-Suite
-         └─────────────────────┘
-                    │
-                    ▼
-         ┌─────────────────────┐
-         │  HTML Assembly      │
-         │  Full Report        │──→  📧 Gmail  +  🔗 Webhook
-         └─────────────────────┘
+         ▼
+┌─────────────────────────────────┐
+│  GPT-4o Call #1                 │   Sections 1–3
+│  Market Fundamentals            │   Overview, Size, Competition
+└─────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────┐
+│  GPT-4o Call #2                 │   Sections 4–6
+│  Consumer Intelligence          │   Drivers, Risks, Behavior
+└─────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────┐
+│  GPT-4o Call #3                 │   Section 7
+│  Strategic Synthesis            │   12-Month Outlook, C-Suite Sum
+└─────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────┐
+│  Quality Gate & Delivery        │
+│  Doc Creation + Status Update   │──→  📄 GDocs + 📊 Sheets
+└─────────────────────────────────┘
 ```
 
 ---
 
 ## Node-by-Node Breakdown
 
-### 1. Chat Trigger (`When chat message received`)
+### 1. Google Sheets Trigger
+Polls a specific Google Sheet every minute for new rows. Inputs required: `Industry`, `Geography`, and `Depth`.
 
-| Property | Value |
-|----------|-------|
-| Type | `@n8n/n8n-nodes-langchain.chatTrigger` |
-| Version | 1.4 |
-| Public | `true` |
+### 2. Perplexity — Live Web Search
+Uses the `sonar` model to pull **real-time factual data**. This serves as the ground truth for all subsequent analysis, eliminating LLM hallucinations regarding market figures.
 
-The entry point of the pipeline. Accepts a natural language message via n8n's built-in chat widget or webhook endpoint.
+### 3–5. GPT-4o Synthesis Chain
+A sequential chain where each call inherits the context of the previous ones. This progressive refinement ensures the 3000-word report remains cohesive and avoids repetition.
 
----
+### 7. Quality Gate (Word Count)
+An `If` node that validates if the generated content meets the minimum word threshold (700 words). Reports failing this check are flagged in the final delivery for manual oversight.
 
-### 2. AI Agent (`AI Agent`)
-
-| Property | Value |
-|----------|-------|
-| Type | `@n8n/n8n-nodes-langchain.agent` |
-| LLM | Groq LLaMA 3.3 70B |
-| System Prompt | *"Extract industry and geography from the user message. Respond with ONLY this JSON, nothing else: {"industry": "...", "geography": "..."}"* |
-
-Uses a constrained system prompt to extract exactly two fields from free-text. The strict JSON-only instruction ensures reliable parsing downstream.
-
----
-
-### 3. JSON Parser (`Code in JavaScript`)
-
-```javascript
-const raw = $input.first().json.output;
-const match = raw.match(/\{[\s\S]*\}/);
-if (!match) throw new Error('No JSON found in agent output: ' + raw);
-const parsed = JSON.parse(match[0]);
-return [{ json: { industry: parsed.industry.trim(), geography: parsed.geography.trim() } }];
-```
-
-Extracts JSON from the AI agent's response using regex. Handles cases where the LLM wraps JSON in additional text.
-
----
-
-### 4. Field Preparation (`Edit Fields`)
-
-Structures the extracted data and pre-builds Tavily search queries:
-- `tavily_query_1`: `"{industry} market size revenue players {geography} 2025"`
-- `tavily_query_2`: `"{industry} consumer trends behavior {geography} 2024 2025"`
-
----
-
-### 5a. Tavily — Market Size & Players
-
-| Property | Value |
-|----------|-------|
-| Endpoint | `POST https://api.tavily.com/search` |
-| Search Depth | `advanced` |
-| Max Results | `5` |
-| Include Answer | `advanced` |
-| Topic | `general` |
-
-Retrieves market sizing data, key players, and revenue figures.
-
----
-
-### 5b. Tavily — Trends & Consumer Data
-
-Same configuration as 5a but with a trend-focused query. Both searches run **in parallel** for speed.
-
----
-
-### 6. Merge Results (`SQL CROSS JOIN`)
-
-Combines both Tavily results using an SQL cross join, creating a unified context object. This ensures both data streams are available to all downstream nodes.
-
----
-
-### 7–9. Three-Stage Groq LLM Chain
-
-See [Prompt Chaining Strategy](#prompt-chaining-strategy) below.
-
----
-
-### 10. Report Assembly (`Assembly Full Report`)
-
-A JavaScript Code node that:
-1. Collects output from all three Groq calls
-2. Converts Markdown to HTML using regex-based transformation
-3. Wraps the report in styled HTML with branded headers
-4. Outputs `full_report_html`, `industry`, and `Geography`
-
----
-
-### 11. Gmail Delivery + Webhook Response
-
-The assembled report is sent to **two parallel outputs**:
-- **Gmail**: HTML email with subject line `"{industry} Market Research — {Geography}"`
-- **Webhook**: Full JSON response for API integrations
-
----
-
-## Prompt Chaining Strategy
-
-The pipeline uses **progressive context accumulation** — each LLM call receives the output of the previous call as additional context:
-
-```mermaid
-flowchart LR
-    subgraph Stage1 ["Stage 1: Market Fundamentals"]
-        direction TB
-        I1["📥 Input: Tavily search results"] --> P1["📝 Prompt: Produce Sections 1-3"]
-        P1 --> O1["📤 Output: Overview + Size + Competition"]
-    end
-
-    subgraph Stage2 ["Stage 2: Consumer Intelligence"]
-        direction TB
-        I2["📥 Input: Stage 1 output"] --> P2["📝 Prompt: Produce Sections 4-6"]
-        P2 --> O2["📤 Output: Drivers + Risks + Behavior"]
-    end
-
-    subgraph Stage3 ["Stage 3: Strategic Synthesis"]
-        direction TB
-        I3["📥 Input: Stage 1 + Stage 2 output"] --> P3["📝 Prompt: Produce Section 7"]
-        P3 --> O3["📤 Output: Outlook + Projections"]
-    end
-
-    Stage1 --> Stage2 --> Stage3
-
-    style Stage1 fill:#F55036,stroke:#DC2626,color:#fff
-    style Stage2 fill:#7C3AED,stroke:#5B21B6,color:#fff
-    style Stage3 fill:#059669,stroke:#047857,color:#fff
-```
-
-### Why Chain Instead of Single Call?
-
-| Approach | Pros | Cons |
-|----------|------|------|
-| **Single prompt** | Simpler | Token overflow, inconsistent structure, weak synthesis |
-| **3-stage chain** ✅ | Better quality, progressive refinement, reliable structure | 3× API calls (mitigated by Groq's speed) |
-
-### LLM Configuration
-
-| Parameter | Value | Rationale |
-|-----------|-------|-----------|
-| Model | `llama-3.3-70b-versatile` | Best balance of quality and speed on Groq |
-| Temperature | `0.3` | Low creativity — prioritizes factual accuracy |
-| Max Tokens | `800` | Prevents verbose output, forces conciseness |
-| System Role | Senior market research analyst | Establishes domain expertise and anti-hallucination guardrails |
-
----
-
-## Error Handling
-
-| Mechanism | Implementation |
-|-----------|---------------|
-| **API Resilience** | All HTTP Request nodes use `neverError: true` — the workflow continues even if an API call fails |
-| **JSON Parsing Safety** | Regex-based JSON extraction with explicit error throws and context messages |
-| **Prompt Guardrails** | Strict section headers, word limits, and format instructions prevent unparseable LLM output |
-| **Idempotency** | Each run is stateless — failed runs can be safely retried |
+### 10–12. Persistence Layer
+The pipeline creates a formatted **Google Doc**, logs the metadata to **Airtable**, and updates the original **Google Sheet** with a "✅ Complete" status and the final report link.
 
 ---
 
 ## Design Decisions
 
-### 1. Tavily over Perplexity/SerpAPI
+### 1. Perplexity over Standard Search
+Perplexity Sonar provides "Search-to-Context" capability, returning a synthesized answer with citations rather than raw URLs, which significantly improves LLM reasoning quality.
 
-- **Tavily's `include_answer: advanced`** provides an AI-synthesized summary alongside raw results — reducing the need for an extra LLM call to summarize search results
-- Native JSON response format eliminates scraping/parsing overhead
+### 2. GPT-4o for Synthesis
+GPT-4o was selected for its superior instruction-following and ability to maintain consistent persona (Senior Consulting Analyst) across a long multi-stage chain.
 
-### 2. Groq over OpenAI/Anthropic
-
-- **Inference speed**: Groq processes LLaMA 3.3 70B at ~500 tokens/second — enabling sub-60s total pipeline execution
-- **Cost**: Groq's free tier is more generous for prototyping
-- **Quality**: LLaMA 3.3 70B's analytical capabilities match GPT-4-class performance for structured market analysis
-
-### 3. SQL CROSS JOIN for Merging
-
-Using n8n's built-in SQL merge (rather than a Code node) ensures:
-- Declarative data combination
-- Consistent behavior regardless of result ordering
-- Easy extensibility if more data sources are added
-
-### 4. Markdown-to-HTML in Assembly
-
-The final report uses a lightweight regex-based Markdown→HTML converter rather than a library:
-- Zero dependencies
-- Handles the specific subset of Markdown the LLM produces
-- Produces clean, email-compatible HTML
+### 3. Integrated Quality Gate
+The word count gate ensures that "Zero-Touch" automation doesn't result in "Zero-Value" thin content. It forces a human-in-the-loop review for complex or niche industries where data might be sparse.
