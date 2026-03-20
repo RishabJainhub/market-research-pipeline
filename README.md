@@ -165,36 +165,36 @@ India's electric vehicle market encompasses battery electric vehicles (BEVs), hy
   <table style="width:100%; border-collapse: collapse; border: none;">
     <tr>
       <td width="33%" align="center">
-        <img src="https://img.icons8.com/external-flat-icons-inmotus-design/64/external-Workflow-workflow-flat-icons-inmotus-design.png" width="40" height="40"/><br/>
+        <img src="https://img.shields.io/badge/n8n-99A1AF?style=for-the-badge&logo=n8n&logoColor=white" /><br/>
         <h4>Orchestration</h4>
-        <p><b>n8n</b><br/>Multi-node workflow automation</p>
+        <p><b>Workflow Automation</b><br/>Multi-node orchestration</p>
       </td>
       <td width="33%" align="center">
-        <img src="https://img.icons8.com/external-flaticons-flat-flat-icons/64/external-search-engine-digital-marketing-flaticons-flat-flat-icons.png" width="40" height="40"/><br/>
+        <img src="https://img.shields.io/badge/Tavily-4F46E5?style=for-the-badge&logo=google-cloud&logoColor=white" /><br/>
         <h4>Web Intelligence</h4>
-        <p><b>Tavily Search API</b><br/>Real-time market discovery</p>
+        <p><b>Search API</b><br/>Real-time market discovery</p>
       </td>
       <td width="33%" align="center">
-        <img src="https://img.icons8.com/external-flat-icons-inmotus-design/64/external-Inference-artificial-intelligence-flat-icons-inmotus-design.png" width="40" height="40"/><br/>
+        <img src="https://img.shields.io/badge/Groq-f55036?style=for-the-badge&logo=speedtest&logoColor=white" /><br/>
         <h4>Inference</h4>
-        <p><b>Groq API</b><br/>Ultra-fast LLM execution</p>
+        <p><b>LPU™ Technology</b><br/>Ultra-fast LLM execution</p>
       </td>
     </tr>
     <tr>
       <td width="33%" align="center">
-        <img src="https://img.icons8.com/external-flat-icons-inmotus-design/64/external-Model-artificial-intelligence-flat-icons-inmotus-design.png" width="40" height="40"/><br/>
+        <img src="https://img.shields.io/badge/Meta-047ED6?style=for-the-badge&logo=meta&logoColor=white" /><br/>
         <h4>LLM Backbone</h4>
         <p><b>LLaMA 3.3 70B</b><br/>Strategic market synthesis</p>
       </td>
       <td width="33%" align="center">
-        <img src="https://img.icons8.com/external-flat-icons-inmotus-design/64/external-Agent-artificial-intelligence-flat-icons-inmotus-design.png" width="40" height="40"/><br/>
+        <img src="https://img.shields.io/badge/n8n_AI-FF6C37?style=for-the-badge&logo=n8n&logoColor=white" /><br/>
         <h4>Reasoning</h4>
-        <p><b>n8n AI Agent</b><br/>NLP intent extraction</p>
+        <p><b>AI Agent</b><br/>NLP intent extraction</p>
       </td>
       <td width="33%" align="center">
-        <img src="https://img.icons8.com/external-flat-icons-inmotus-design/64/external-Delivery-artificial-intelligence-flat-icons-inmotus-design.png" width="40" height="40"/><br/>
+        <img src="https://img.shields.io/badge/Gmail-EA4335?style=for-the-badge&logo=gmail&logoColor=white" /><br/>
         <h4>Delivery</h4>
-        <p><b>Gmail API</b><br/>Instant HTML reporting</p>
+        <p><b>SMTP/API</b><br/>Instant HTML reporting</p>
       </td>
     </tr>
   </table>
