@@ -1,49 +1,10 @@
 {
-  "name": "Automated Market Research Pipeline \u2014 Rishab",
+  "name": "Market Research Pipeline — Tavily + Groq",
   "nodes": [
     {
       "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "mode": "everyMinute"
-            }
-          ]
-        },
-        "documentId": {
-          "__rl": true,
-          "mode": "url",
-          "value": "YOUR_GOOGLE_SHEET_URL"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "Sheet1",
-          "mode": "name"
-        },
-        "event": "rowAdded",
-        "options": {}
-      },
-      "id": "node-001",
-      "name": "1. Google Sheets Trigger",
-      "type": "n8n-nodes-base.googleSheetsTrigger",
-      "typeVersion": 1,
-      "position": [
-        240,
-        400
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "CRED_GSHEETS",
-          "name": "Google Sheets Account"
-        }
-      }
-    },
-    {
-      "parameters": {
         "method": "POST",
-        "url": "https://api.perplexity.ai/chat/completions",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "url": "https://api.tavily.com/search",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -53,16 +14,35 @@
             },
             {
               "name": "Authorization",
-              "value": "Bearer YOUR_PERPLEXITY_API_KEY"
+              "value": "Bearer YOUR_TAVILY_API_KEY"
             }
           ]
         },
         "sendBody": true,
         "bodyParameters": {
-          "parameters": []
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $json.industry }} consumer trends growth drivers challenges {{ $json.Geography }} 2025"
+            },
+            {
+              "name": "search_depth",
+              "value": "advanced"
+            },
+            {
+              "name": "max_results",
+              "value": "5"
+            },
+            {
+              "name": "include_answer",
+              "value": "advanced"
+            },
+            {
+              "name": "topic",
+              "value": "general"
+            }
+          ]
         },
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"sonar\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a market research assistant. Return only real-time factual data with numbers, sources, and company names. Be concise and data-dense.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Provide current market intelligence for: {{ $json['Industry'] }} in {{ $json['Geography'] }}. Include: (1) market size estimates with year, (2) top 5 companies with approximate revenue or market share, (3) 3 key growth trends with supporting data points, (4) 2 major risks or headwinds. Cite specific figures wherever possible.\"\n    }\n  ],\n  \"max_tokens\": 1024,\n  \"search_recency_filter\": \"month\",\n  \"return_citations\": true\n}",
         "options": {
           "response": {
             "response": {
@@ -71,560 +51,710 @@
           }
         }
       },
-      "id": "node-002",
-      "name": "2. Perplexity \u2014 Live Web Search",
+      "id": "c0a5c8f1-fb6d-40c7-b530-5aee129c4a0e",
+      "name": "2b. Tavily — Trends & Consumer Data1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -1216,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combineBySql",
+        "query": "SELECT * FROM input1 CROSS JOIN input2"
+      },
+      "id": "051d8062-ad25-48ba-92c4-53904b6b359d",
+      "name": "3. Merge Tavily Results1",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -976,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "industry",
+              "stringValue": "={{ $('Edit Fields').item.json.industry }}"
+            },
+            {
+              "name": "Geography",
+              "stringValue": "={{$('Edit Fields').item.json.Geography}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "43a1dbf5-95b6-462e-949c-ac501c801b69",
+      "name": "4. Prepare Context Variables1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -768,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_GROQ_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.body }}\n",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "b3451d45-283e-4d0b-a6d0-d763f456273f",
+      "name": "5. Groq — Market Fundamentals1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -144,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_GROQ_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.body }}\n",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "535f13d7-b53a-4e97-bf3c-9a41e73dac8a",
+      "name": "6. Groq — Consumer Intelligence1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [
         480,
-        400
+        0
       ]
     },
     {
       "parameters": {
-        "resource": "text",
-        "operation": "message",
-        "modelId": {
-          "__rl": true,
-          "value": "gpt-4o",
-          "mode": "list"
-        },
-        "messages": {
-          "values": [
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
             {
-              "role": "system",
-              "content": "You are a senior market research analyst at a tier-1 consulting firm. You produce precise, data-grounded market intelligence reports. Always cite specific numbers. If uncertain, state the range and confidence level explicitly. Never fabricate statistics."
+              "name": "Authorization",
+              "value": "Bearer YOUR_GROQ_API_KEY"
             },
             {
-              "role": "user",
-              "content": "=Using the following REAL-TIME web intelligence as your primary source:\n\n{{ $json.choices[0].message.content }}\n\nProduce Sections 1\u20133 of a market research report for: **{{ $('1. Google Sheets Trigger').item.json['Industry'] }}** in **{{ $('1. Google Sheets Trigger').item.json['Geography'] }}**.\n\n## Section 1 \u2014 Market Overview (100 words)\nDefine the market clearly. State its scope, the core value it delivers, and 2 distinguishing characteristics.\n\n## Section 2 \u2014 Market Size (150 words)\nProvide TAM, SAM, and SOM estimates with figures and year references. Note your confidence level (High / Medium / Estimated) for each number. Reference the real-time data above where applicable.\n\n## Section 3 \u2014 Competitive Landscape (200 words)\nName the top 5 players. For each: revenue or market share estimate, primary competitive advantage, and one strategic vulnerability.\n\nFormat: Use exact section headers shown. Use bullet points within sections. Total: 450 words maximum. Do not add sections beyond what is asked."
+              "name": "Content-Type",
+              "value": "application/json"
             }
           ]
         },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.body }}\n",
         "options": {
-          "maxTokens": 900,
-          "temperature": 0.3
-        }
-      },
-      "id": "node-003",
-      "name": "3. GPT Call 1 \u2014 Market Fundamentals",
-      "type": "@n8n/n8n-nodes-langchain.openAi",
-      "typeVersion": 1,
-      "position": [
-        720,
-        400
-      ],
-      "credentials": {
-        "openAiApi": {
-          "id": "CRED_OPENAI",
-          "name": "OpenAI Account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "resource": "text",
-        "operation": "message",
-        "modelId": {
-          "__rl": true,
-          "value": "gpt-4o",
-          "mode": "list"
-        },
-        "messages": {
-          "values": [
-            {
-              "role": "system",
-              "content": "You are a senior market research analyst at a tier-1 consulting firm. You produce precise, data-grounded market intelligence reports. Always cite specific numbers. If uncertain, state the range and confidence level explicitly. Never fabricate statistics."
-            },
-            {
-              "role": "user",
-              "content": "=You are continuing a structured market research report on **{{ $('1. Google Sheets Trigger').item.json['Industry'] }}** in **{{ $('1. Google Sheets Trigger').item.json['Geography'] }}**.\n\nThe market fundamentals section has already established:\n{{ $('3. GPT Call 1 \u2014 Market Fundamentals').item.json.message.content }}\n\nNow produce Sections 4\u20136:\n\n## Section 4 \u2014 Growth Drivers (150 words)\nIdentify exactly 3 specific factors driving market expansion. For each: (a) name the driver, (b) explain the mechanism, (c) cite a supporting data point or trend.\n\n## Section 5 \u2014 Barriers & Risks (150 words)\nIdentify exactly 3 key challenges or headwinds. For each: (a) name the barrier, (b) quantify its impact where possible, (c) suggest one mitigation approach.\n\n## Section 6 \u2014 Consumer Intelligence (200 words)\nDescribe 3 measurable consumer behavior shifts. Include: overall sentiment direction (positive/negative/mixed), one unresolved consumer pain point, and one emerging consumer expectation from market players.\n\nFormat: Use exact section headers. Bullet points within each section. 500 words maximum. Do not repeat content from Sections 1\u20133."
+          "response": {
+            "response": {
+              "neverError": true
             }
-          ]
-        },
-        "options": {
-          "maxTokens": 700,
-          "temperature": 0.4
-        }
-      },
-      "id": "node-004",
-      "name": "4. GPT Call 2 \u2014 Consumer Intelligence",
-      "type": "@n8n/n8n-nodes-langchain.openAi",
-      "typeVersion": 1,
-      "position": [
-        960,
-        400
-      ],
-      "credentials": {
-        "openAiApi": {
-          "id": "CRED_OPENAI",
-          "name": "OpenAI Account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "resource": "text",
-        "operation": "message",
-        "modelId": {
-          "__rl": true,
-          "value": "gpt-4o",
-          "mode": "list"
-        },
-        "messages": {
-          "values": [
-            {
-              "role": "system",
-              "content": "You are a senior market research analyst at a tier-1 consulting firm. You produce concise, high-conviction strategic outlooks. Write for a C-suite audience. Be direct, specific, and actionable."
-            },
-            {
-              "role": "user",
-              "content": "=You are writing the final section of a market research report on **{{ $('1. Google Sheets Trigger').item.json['Industry'] }}** in **{{ $('1. Google Sheets Trigger').item.json['Geography'] }}**.\n\nFull report context:\nFUNDAMENTALS: {{ $('3. GPT Call 1 \u2014 Market Fundamentals').item.json.message.content }}\nCONSUMER INTELLIGENCE: {{ $('4. GPT Call 2 \u2014 Consumer Intelligence').item.json.message.content }}\n\nProduce Section 7:\n\n## Section 7 \u2014 Strategic Outlook\n\n**12-Month Outlook (75 words):** What will change? What will consolidate? Name one specific event or inflection point likely in the next 12 months.\n\n**3-Year Projection (75 words):** What does the market look like in 2028-2029? Provide a specific market size estimate or CAGR range with your confidence level.\n\n**Top Opportunity (50 words):** The single highest-conviction opportunity for a new entrant or existing player. Be specific \u2014 name the gap, the mechanism, and the rough size of the prize.\n\n**Top Risk (50 words):** The one risk that could materially disrupt this market. Name it, quantify the potential impact, and state the early warning signal to watch.\n\n**C-Suite Summary (1 sentence):** A single sentence a CEO could repeat in a board meeting to characterize this market right now.\n\nTotal: 300 words maximum."
-            }
-          ]
-        },
-        "options": {
-          "maxTokens": 500,
-          "temperature": 0.5
-        }
-      },
-      "id": "node-005",
-      "name": "5. GPT Call 3 \u2014 Strategic Synthesis",
-      "type": "@n8n/n8n-nodes-langchain.openAi",
-      "typeVersion": 1,
-      "position": [
-        1200,
-        400
-      ],
-      "credentials": {
-        "openAiApi": {
-          "id": "CRED_OPENAI",
-          "name": "OpenAI Account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "asgn-001",
-              "name": "full_report",
-              "value": "=# MARKET RESEARCH REPORT\n## {{ $('1. Google Sheets Trigger').item.json['Industry'] }} \u2014 {{ $('1. Google Sheets Trigger').item.json['Geography'] }}\n**Generated:** {{ $now.format('DD MMMM YYYY, HH:mm') }} IST\n**Depth Level:** {{ $('1. Google Sheets Trigger').item.json['Depth'] }}\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\n{{ $('3. GPT Call 1 \u2014 Market Fundamentals').item.json.message.content }}\n\n{{ $('4. GPT Call 2 \u2014 Consumer Intelligence').item.json.message.content }}\n\n{{ $('5. GPT Call 3 \u2014 Strategic Synthesis').item.json.message.content }}\n\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n*Generated by Automated Market Research Pipeline v1.0*\n*Real-time data layer: Perplexity Sonar API | Synthesis: GPT-4o*\n*This report is AI-generated. Verify critical figures before strategic decisions.*",
-              "type": "string"
-            },
-            {
-              "id": "asgn-002",
-              "name": "word_count",
-              "value": "={{ $('3. GPT Call 1 \u2014 Market Fundamentals').item.json.message.content.split(' ').length + $('4. GPT Call 2 \u2014 Consumer Intelligence').item.json.message.content.split(' ').length + $('5. GPT Call 3 \u2014 Strategic Synthesis').item.json.message.content.split(' ').length }}",
-              "type": "number"
-            },
-            {
-              "id": "asgn-003",
-              "name": "industry",
-              "value": "={{ $('1. Google Sheets Trigger').item.json['Industry'] }}",
-              "type": "string"
-            },
-            {
-              "id": "asgn-004",
-              "name": "doc_title",
-              "value": "={{ $('1. Google Sheets Trigger').item.json['Industry'] }} Market Research Report \u2014 {{ $now.format('DD MMM YYYY') }}",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "node-006",
-      "name": "6. Assemble Full Report",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3,
-      "position": [
-        1440,
-        400
-      ]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict"
-          },
-          "conditions": [
-            {
-              "id": "cond-001",
-              "leftValue": "={{ $json.word_count }}",
-              "rightValue": 700,
-              "operator": {
-                "type": "number",
-                "operation": "gte"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "id": "node-007",
-      "name": "7. Quality Gate (700+ words?)",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [
-        1680,
-        400
-      ]
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "asgn-005",
-              "name": "full_report",
-              "value": "={{ $('6. Assemble Full Report').item.json.full_report }}\n\n---\n\u26a0\ufe0f QUALITY NOTE: This report was flagged as below minimum word threshold (700 words). Output may be less comprehensive than usual. Consider re-running with a more specific industry name.",
-              "type": "string"
-            },
-            {
-              "id": "asgn-006",
-              "name": "word_count",
-              "value": "={{ $('6. Assemble Full Report').item.json.word_count }}",
-              "type": "number"
-            },
-            {
-              "id": "asgn-007",
-              "name": "industry",
-              "value": "={{ $('6. Assemble Full Report').item.json.industry }}",
-              "type": "string"
-            },
-            {
-              "id": "asgn-008",
-              "name": "doc_title",
-              "value": "={{ $('6. Assemble Full Report').item.json.doc_title }} [FLAGGED]",
-              "type": "string"
-            },
-            {
-              "id": "asgn-009",
-              "name": "quality_pass",
-              "value": false,
-              "type": "boolean"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "node-008",
-      "name": "8A. Flag Low Quality",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3,
-      "position": [
-        1920,
-        560
-      ]
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "asgn-010",
-              "name": "full_report",
-              "value": "={{ $('6. Assemble Full Report').item.json.full_report }}",
-              "type": "string"
-            },
-            {
-              "id": "asgn-011",
-              "name": "word_count",
-              "value": "={{ $('6. Assemble Full Report').item.json.word_count }}",
-              "type": "number"
-            },
-            {
-              "id": "asgn-012",
-              "name": "industry",
-              "value": "={{ $('6. Assemble Full Report').item.json.industry }}",
-              "type": "string"
-            },
-            {
-              "id": "asgn-013",
-              "name": "doc_title",
-              "value": "={{ $('6. Assemble Full Report').item.json.doc_title }}",
-              "type": "string"
-            },
-            {
-              "id": "asgn-014",
-              "name": "quality_pass",
-              "value": true,
-              "type": "boolean"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "node-009",
-      "name": "8B. Quality Passed",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3,
-      "position": [
-        1920,
-        240
-      ]
-    },
-    {
-      "parameters": {
-        "mode": "chooseBranch",
-        "output": "input1"
-      },
-      "id": "node-010",
-      "name": "9. Merge Branches",
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3,
-      "position": [
-        2160,
-        400
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "create",
-        "title": "={{ $json.doc_title }}",
-        "content": "={{ $json.full_report }}",
-        "options": {}
-      },
-      "id": "node-011",
-      "name": "10. Create Google Doc",
-      "type": "n8n-nodes-base.googleDocs",
-      "typeVersion": 2,
-      "position": [
-        2400,
-        400
-      ],
-      "credentials": {
-        "googleDocsOAuth2Api": {
-          "id": "CRED_GDOCS",
-          "name": "Google Docs Account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "create",
-        "base": {
-          "__rl": true,
-          "value": "YOUR_AIRTABLE_BASE_ID",
-          "mode": "url"
-        },
-        "table": {
-          "__rl": true,
-          "value": "Market Research Runs",
-          "mode": "name"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "Industry": "={{ $('9. Merge Branches').item.json.industry }}",
-            "Date Run": "={{ $now.format('YYYY-MM-DD') }}",
-            "Status": "Complete",
-            "Report Link": "={{ $json.uri }}",
-            "Word Count": "={{ $('9. Merge Branches').item.json.word_count }}",
-            "Quality Pass": "={{ $('9. Merge Branches').item.json.quality_pass }}"
           }
-        },
-        "options": {}
-      },
-      "id": "node-012",
-      "name": "11. Log to Airtable",
-      "type": "n8n-nodes-base.airtable",
-      "typeVersion": 2,
-      "position": [
-        2640,
-        400
-      ],
-      "credentials": {
-        "airtableTokenApi": {
-          "id": "CRED_AIRTABLE",
-          "name": "Airtable Account"
         }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "update",
-        "documentId": {
-          "__rl": true,
-          "mode": "url",
-          "value": "YOUR_GOOGLE_SHEET_URL"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "Sheet1",
-          "mode": "name"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "Status": "\u2705 Complete",
-            "Report Link": "={{ $('11. Log to Airtable').item.json.fields['Report Link'] }}",
-            "Word Count": "={{ $('9. Merge Branches').item.json.word_count }}",
-            "Quality Pass": "={{ $('9. Merge Branches').item.json.quality_pass }}"
-          },
-          "matchingColumns": [
-            "row_number"
-          ],
-          "schema": []
-        },
-        "options": {}
       },
-      "id": "node-013",
-      "name": "12. Update Sheets Status",
-      "type": "n8n-nodes-base.googleSheets",
+      "id": "65c492ea-6f8b-4711-83dc-d6874e352eed",
+      "name": "7. Groq — Strategic Synthesis1",
+      "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [
-        2880,
-        400
+        1104,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ff30522b-e61e-435e-bdee-8796e874055e",
+              "name": "user message",
+              "value": "==Using this market context:\n{{ $('5. Groq — Market Fundamentals1').item.json.choices[0].message.content }}\n\nNow produce Sections 4-6 for {{ $('4. Prepare Context Variables1').item.json.industry }} in {{ $('4. Prepare Context Variables1').item.json.Geography }}:\n\n## Section 4 — Growth Drivers\n3 growth factors. For each: name, mechanism, data point.\n\n## Section 5 — Barriers & Risks\n3 challenges. For each: name, impact, mitigation.\n\n## Section 6 — Consumer Intelligence\n3 behavior shifts, one pain point, one emerging expectation.\n\n500 words max. Use exact headers.\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        64,
+        0
       ],
+      "id": "a260dd1c-adbf-4ed3-9d52-37385de6aaef",
+      "name": "Prepare Node 6 Content1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "52c47bb2-5428-40ce-8f30-bd7dd2f633a3",
+              "name": "user_message",
+              "value": "==You are completing a market research report for {{ $('4. Prepare Context Variables1').item.json.industry }} in {{ $('4. Prepare Context Variables1').item.json.Geography }}.\n\nMARKET FUNDAMENTALS:\n{{ $('5. Groq — Market Fundamentals1').item.json.choices[0].message.content }}\n\nCONSUMER INTELLIGENCE:\n{{ $('6. Groq — Consumer Intelligence1').item.json.choices[0].message.content }}\n\nProduce Section 7 — Strategic Outlook:\n\n**12-Month Outlook (75 words):** What will change or consolidate? Name one specific inflection point.\n**3-Year Projection (75 words):** Market size or CAGR estimate for 2028. State confidence level.\n**Top Opportunity (50 words):** Single highest-conviction opportunity. Gap, mechanism, prize size.\n**Top Risk (50 words):** One material disruption risk. Quantify impact. Early warning signal.\n**C-Suite Summary (1 sentence):** One sentence a CEO can repeat in a board meeting.\n\n300 words maximum.\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        688,
+        0
+      ],
+      "id": "fe642e36-a8b9-4dfe-b43b-15876d77396b",
+      "name": "Prepare Node 7 Content1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_TAVILY_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $json.industry }} market size players {{ $json.Geography }} 2025"
+            },
+            {
+              "name": "search_depth",
+              "value": "advanced"
+            },
+            {
+              "name": "max_results",
+              "value": "5"
+            },
+            {
+              "name": "include_answer",
+              "value": "advanced"
+            },
+            {
+              "name": "topic",
+              "value": "general"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "e6e29d55-e1c3-4acc-98be-b160f72761d1",
+      "name": "2a. Tavily — Market Size & Players1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -1216,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b6a22a54-fe25-4fcb-b77d-d988f6101eb8",
+              "name": "user_message",
+              "value": "==Using the following market research data:\n\nMARKET SIZE & PLAYERS:\n{{ $('2a. Tavily — Market Size & Players1').item.json.answer }}\n\nTRENDS & CONSUMER DATA:\n{{ $('2b. Tavily — Trends & Consumer Data1').item.json.answer }}\n\nProduce Sections 1-3 for {{ $('4. Prepare Context Variables1').item.json.industry }} in {{ $('4. Prepare Context Variables1').item.json.Geography }}:\n\n## Section 1 — Market Overview (150 words)\nDefine market scope, key segments, geographic coverage, 2 distinguishing characteristics.\n\n## Section 2 — Market Size (150 words)\nTAM, SAM, SOM estimates with confidence levels.\n\n## Section 3 — Competitive Landscape (200 words)\nTop 5 players. For each: revenue/share, primary advantage, one vulnerability.\n\n500 words max. Use exact headers. Bullets.\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -560,
+        0
+      ],
+      "id": "36b453fe-fb31-4140-a012-d76d834890d6",
+      "name": "Prepare Node 5 Content1"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -2336,
+        -32
+      ],
+      "id": "22fcb544-7722-445e-a12a-9b90f9e1e6e5",
+      "name": "When chat message received",
+      "webhookId": "0f8167ec-8692-4c76-8dcc-a5a7872e7190"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=Extract industry and geography from the user message.\nRespond with ONLY this JSON, nothing else:\n{\"industry\": \"extracted industry\", \"geography\": \"extracted location\"}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -2096,
+        -32
+      ],
+      "id": "24670da4-55b0-4ed7-b577-c937c2bb151e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -2096,
+        176
+      ],
+      "id": "fa150748-6637-49c4-b3f0-59c40213af2b",
+      "name": "Groq Chat Model",
       "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "CRED_GSHEETS",
-          "name": "Google Sheets Account"
+        "groqApi": {
+          "id": "rm9gSMjRQEXkGXNh",
+          "name": "Groq account"
         }
       }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output;\n\nconst match = raw.match(/\\{[\\s\\S]*\\}/);\n\nif (!match) {\n  throw new Error('No JSON found in agent output: ' + raw);\n}\n\nconst parsed = JSON.parse(match[0]);\n\nreturn [{\n  json: {\n    industry: parsed.industry.trim(),\n    geography: parsed.geography.trim()\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1744,
+        -32
+      ],
+      "id": "e01d2c33-7c7b-4b6a-b067-7d31a27e5f50",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "17269942-71bd-400d-a677-4aab38c1df8a",
+              "name": "industry",
+              "value": "=\t{{ $json.industry }}",
+              "type": "string"
+            },
+            {
+              "id": "25095143-bdc1-4006-bdc8-8c5a02636a6d",
+              "name": "Geography",
+              "value": "={{ $json.geography }}",
+              "type": "string"
+            },
+            {
+              "id": "1ccd02cd-01b2-4742-a3b4-22e1ebfc280a",
+              "name": "tavily_query_1",
+              "value": "={{ $json.industry }} market size revenue players {{ $json.geography }} 2025",
+              "type": "string"
+            },
+            {
+              "id": "0f519621-34fe-4d16-a41e-a55a0e4b8c9a",
+              "name": "tavily_query_2",
+              "value": "={{ $json.industry }} consumer trends behavior {{ $json.geography }} 2024 2025",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1536,
+        -32
+      ],
+      "id": "1d4052a7-1074-4c14-9f2d-2051a9b3e3a7",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "sendTo": "your-email@example.com",
+        "subject": "={{ $json.industry }} Market Research — {{ $json.Geography }}",
+        "message": "={{ $json.full_report_html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1696,
+        -128
+      ],
+      "id": "3542e0bb-5615-4826-8b22-595784884637",
+      "name": "Send a message",
+      "webhookId": "2ad5245c-892b-46b0-8cb3-a1575564fa3c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "GcNgPNdOVBWOahSL",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1696,
+        96
+      ],
+      "id": "e9597063-dbf5-4cb3-8c73-f99241516735",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const userMessage = $input.item.json.user_message;\n\nconst body = {\n  model: \"llama-3.3-70b-versatile\",\n  temperature: 0.3,\n  max_tokens: 800,\n  messages: [\n    {\n      role: \"system\",\n      content: \"You are a senior market research analyst. Be precise. Never fabricate statistics.\"\n    },\n    {\n      role: \"user\",\n      content: userMessage\n    }\n  ]\n};\n\nreturn { body: JSON.stringify(body) };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -352,
+        0
+      ],
+      "id": "d4f72e1f-021f-4a7a-8e15-b20c3ad08639",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.all()[0].json;\nconst userMessage = item[\"user message\"];\n\nconst body = {\n  model: \"llama-3.3-70b-versatile\",\n  temperature: 0.3,\n  max_tokens: 800,\n  messages: [\n    {\n      role: \"system\",\n      content: \"You are a senior market research analyst. Be precise. Never fabricate statistics.\"\n    },\n    {\n      role: \"user\",\n      content: userMessage\n    }\n  ]\n};\n\nreturn [{ json: { body: JSON.stringify(body) } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        0
+      ],
+      "id": "d3c5e333-fcd4-4a51-a830-855a0c3b0cf1",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.all()[0].json;\nconst userMessage = item[\"user_message\"];\n\nconst body = {\n  model: \"llama-3.3-70b-versatile\",\n  temperature: 0.3,\n  max_tokens: 800,\n  messages: [\n    {\n      role: \"system\",\n      content: \"You are a senior market research analyst. Be precise. Never fabricate statistics.\"\n    },\n    {\n      role: \"user\",\n      content: userMessage\n    }\n  ]\n};\n\nreturn [{ json: { body: JSON.stringify(body) } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        0
+      ],
+      "id": "3ce6628f-9113-449d-854c-2dd90a793c0e",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const section123 = $('5. Groq — Market Fundamentals1').first().json.choices[0].message.content;\nconst section456 = $('6. Groq — Consumer Intelligence1').first().json.choices[0].message.content;\nconst section789 = $('7. Groq — Strategic Synthesis1').first().json.choices[0].message.content;\n\nconst industry = $('Edit Fields').first().json.industry;\nconst geography = $('Edit Fields').first().json.Geography;\n\nfunction mdToHtml(md) {\n  return md\n    .replace(/^### (.+)$/gm, '<h3>$1</h3>')\n    .replace(/^## (.+)$/gm, '<h2>$1</h2>')\n    .replace(/^# (.+)$/gm, '<h1>$1</h1>')\n    .replace(/\\*\\*(.+?)\\*\\*/g, '<strong>$1</strong>')\n    .replace(/\\*(.+?)\\*/g, '<em>$1</em>')\n    .replace(/^\\* (.+)$/gm, '<li>$1</li>')\n    .replace(/^\\d+\\. (.+)$/gm, '<li>$1</li>')\n    .replace(/(<li>.*<\\/li>)/gs, '<ul>$1</ul>')\n    .replace(/\\n{2,}/g, '</p><p>')\n    .replace(/^(?!<[hlu])/gm, '')\n    .trim();\n}\n\nconst full_report_html = `\n<div style=\"font-family: Arial, sans-serif; max-width: 800px; margin: auto; color: #222;\">\n  <h1 style=\"color: #1a1a2e; border-bottom: 2px solid #e63946; padding-bottom: 8px;\">\n    ${industry} Market Research — ${geography}\n  </h1>\n  ${mdToHtml(section123)}\n  ${mdToHtml(section456)}\n  ${mdToHtml(section789)}\n</div>\n`;\n\nreturn [{\n  json: {\n    full_report_html,\n    industry,\n    Geography: geography\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1312,
+        0
+      ],
+      "id": "2fb2aa14-6c88-4b83-90de-0ecc60f42e67",
+      "name": "Assembly Full Report1"
     }
   ],
+  "pinData": {},
   "connections": {
-    "1. Google Sheets Trigger": {
+    "2b. Tavily — Trends & Consumer Data1": {
       "main": [
         [
           {
-            "node": "2. Perplexity \u2014 Live Web Search",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "2. Perplexity \u2014 Live Web Search": {
-      "main": [
-        [
-          {
-            "node": "3. GPT Call 1 \u2014 Market Fundamentals",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "3. GPT Call 1 \u2014 Market Fundamentals": {
-      "main": [
-        [
-          {
-            "node": "4. GPT Call 2 \u2014 Consumer Intelligence",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "4. GPT Call 2 \u2014 Consumer Intelligence": {
-      "main": [
-        [
-          {
-            "node": "5. GPT Call 3 \u2014 Strategic Synthesis",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "5. GPT Call 3 \u2014 Strategic Synthesis": {
-      "main": [
-        [
-          {
-            "node": "6. Assemble Full Report",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "6. Assemble Full Report": {
-      "main": [
-        [
-          {
-            "node": "7. Quality Gate (700+ words?)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "7. Quality Gate (700+ words?)": {
-      "main": [
-        [
-          {
-            "node": "8B. Quality Passed",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "8A. Flag Low Quality",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "8B. Quality Passed": {
-      "main": [
-        [
-          {
-            "node": "9. Merge Branches",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "8A. Flag Low Quality": {
-      "main": [
-        [
-          {
-            "node": "9. Merge Branches",
+            "node": "3. Merge Tavily Results1",
             "type": "main",
             "index": 1
           }
         ]
       ]
     },
-    "9. Merge Branches": {
+    "3. Merge Tavily Results1": {
       "main": [
         [
           {
-            "node": "10. Create Google Doc",
+            "node": "4. Prepare Context Variables1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "10. Create Google Doc": {
+    "4. Prepare Context Variables1": {
       "main": [
         [
           {
-            "node": "11. Log to Airtable",
+            "node": "Prepare Node 5 Content1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "11. Log to Airtable": {
+    "5. Groq — Market Fundamentals1": {
       "main": [
         [
           {
-            "node": "12. Update Sheets Status",
+            "node": "Prepare Node 6 Content1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "6. Groq — Consumer Intelligence1": {
+      "main": [
+        [
+          {
+            "node": "Prepare Node 7 Content1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "7. Groq — Strategic Synthesis1": {
+      "main": [
+        [
+          {
+            "node": "Assembly Full Report1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Node 6 Content1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Node 7 Content1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2a. Tavily — Market Size & Players1": {
+      "main": [
+        [
+          {
+            "node": "3. Merge Tavily Results1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Node 5 Content1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "2a. Tavily — Market Size & Players1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "2b. Tavily — Trends & Consumer Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "5. Groq — Market Fundamentals1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "6. Groq — Consumer Intelligence1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "7. Groq — Strategic Synthesis1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assembly Full Report1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond to Webhook",
             "type": "main",
             "index": 0
           }
@@ -635,13 +765,13 @@
   "active": false,
   "settings": {
     "executionOrder": "v1",
-    "saveManualExecutions": true,
-    "callerPolicy": "workflowsFromSameOwner",
-    "errorWorkflow": ""
+    "availableInMCP": false
   },
-  "pinData": {},
+  "versionId": "9b290b21-01d4-4c02-8701-72dc5e8cb387",
   "meta": {
-    "templateCredsSetupCompleted": false,
-    "instanceId": "market-research-pipeline-v1"
-  }
+    "templateCredsSetupCompleted": true,
+    "instanceId": "33e651670791ee8006cd295a896789cc900a7cc3720ad69f15d1db590fabbc6b"
+  },
+  "id": "WSbLM_ebBPZELav1zBUl-",
+  "tags": []
 }

@@ -4,14 +4,14 @@
 
 ---
 
-## Perplexity Sonar API
+## Tavily Search API
 
-The pipeline uses Perplexity's `sonar` model as the primary ground-truth search layer.
+The pipeline makes **2 parallel calls** to Tavily for web intelligence.
 
 ### Endpoint
 
 ```
-POST https://api.perplexity.ai/chat/completions
+POST https://api.tavily.com/search
 ```
 
 ### Headers
@@ -19,54 +19,147 @@ POST https://api.perplexity.ai/chat/completions
 | Header | Value |
 |--------|-------|
 | `Content-Type` | `application/json` |
-| `Authorization` | `Bearer YOUR_PERPLEXITY_API_KEY` |
+| `Authorization` | `Bearer YOUR_TAVILY_API_KEY` |
 
-### Key Parameters
+### Request Body
 
-| Parameter | Value |
-|-----------|-------|
-| `model` | `sonar` |
-| `max_tokens` | `1024` |
-| `search_recency_filter` | `month` |
-| `return_citations` | `true` |
+| Parameter | Type | Value | Description |
+|-----------|------|-------|-------------|
+| `query` | string | Dynamic | Search query built from industry + geography |
+| `search_depth` | string | `"advanced"` | Uses Tavily's advanced search for higher quality results |
+| `max_results` | integer | `5` | Number of search results to return |
+| `include_answer` | string | `"advanced"` | Returns an AI-synthesized answer alongside raw results |
+| `topic` | string | `"general"` | Search topic category |
+
+### Search Queries Used
+
+| Call | Query Template | Example |
+|------|---------------|---------|
+| Market Size & Players | `"{industry} market size players {geography} 2025"` | `"Electric vehicles market size players India 2025"` |
+| Trends & Consumer Data | `"{industry} consumer trends growth drivers challenges {geography} 2025"` | `"Electric vehicles consumer trends growth drivers challenges India 2025"` |
+
+### Response (Key Fields)
+
+```json
+{
+  "answer": "AI-synthesized summary of search results...",
+  "results": [
+    {
+      "title": "Article Title",
+      "url": "https://example.com/article",
+      "content": "Relevant excerpt...",
+      "score": 0.95
+    }
+  ]
+}
+```
+
+### Rate Limits
+
+| Tier | Searches/Month | Cost |
+|------|---------------|------|
+| Free | 1,000 | $0 |
+| Pro | 10,000 | $50/mo |
+| Enterprise | Custom | Custom |
+
+> 📖 Full docs: [docs.tavily.com](https://docs.tavily.com)
 
 ---
 
-## OpenAI GPT-4o API
+## Groq Chat Completions API
 
-The pipeline makes 3 sequential calls to GPT-4o for high-fidelity report synthesis.
+The pipeline makes **4 calls** to Groq (1 for intent extraction via AI Agent, 3 for analysis).
 
 ### Endpoint
 
 ```
-POST https://api.openai.com/v1/chat/completions
+POST https://api.groq.com/openai/v1/chat/completions
+```
+
+### Headers
+
+| Header | Value |
+|--------|-------|
+| `Content-Type` | `application/json` |
+| `Authorization` | `Bearer YOUR_GROQ_API_KEY` |
+
+### Request Body
+
+```json
+{
+  "model": "llama-3.3-70b-versatile",
+  "temperature": 0.3,
+  "max_tokens": 800,
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a senior market research analyst. Be precise. Never fabricate statistics."
+    },
+    {
+      "role": "user",
+      "content": "Dynamic prompt content..."
+    }
+  ]
+}
 ```
 
 ### Configuration Rationale
 
-| Parameter | Value | Rationale |
-|-----------|-------|-----------|
-| `model` | `gpt-4o` | State-of-the-art reasoning and instruction following. |
-| `temperature` | `0.3 - 0.5` | Balanced for factual synthesis and natural report flow. |
-| `max_tokens` | `900 / 700 / 500` | Decreasing limits to force synthesis toward the final "Executive Summary". |
+| Parameter | Value | Why |
+|-----------|-------|-----|
+| `model` | `llama-3.3-70b-versatile` | Best quality/speed ratio on Groq; 70B parameter model handles complex market analysis |
+| `temperature` | `0.3` | Low creativity — prioritizes factual accuracy over creative writing |
+| `max_tokens` | `800` | Enforces concise output; prevents verbose, unfocused responses |
+
+### Response (Key Fields)
+
+```json
+{
+  "choices": [
+    {
+      "message": {
+        "role": "assistant",
+        "content": "## Section 1 — Market Overview\n..."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 450,
+    "completion_tokens": 680,
+    "total_tokens": 1130
+  }
+}
+```
+
+### Rate Limits (Free Tier)
+
+| Metric | Limit |
+|--------|-------|
+| Requests/minute | 30 |
+| Requests/day | 14,400 |
+| Tokens/minute | 6,000 |
+
+> 📖 Full docs: [console.groq.com/docs](https://console.groq.com/docs)
 
 ---
 
-## Google Sheets & Docs API
-
-### Google Sheets Trigger
-- **Event**: `rowAdded`
-- **Polling**: Every 1 minute
-
-### Google Docs Export
-- **Operation**: `create`
-- **Content**: Assembled HTML/Markdown from the GPT-4o chain.
-
----
-
-## Airtable API
+## Gmail API (via n8n)
 
 ### Configuration
-- **Base ID**: Required (configured in node)
-- **Table**: `Market Research Runs`
-- **Columns**: `Industry`, `Date Run`, `Status`, `Report Link`, `Word Count`, `Quality Pass`.
+
+| Property | Value |
+|----------|-------|
+| Node | `n8n-nodes-base.gmail` v2.2 |
+| Auth | OAuth2 |
+| Send To | Configurable email address |
+| Subject | Dynamic: `"{industry} Market Research — {Geography}"` |
+| Body | HTML formatted report |
+
+### OAuth2 Setup
+
+1. Create a Google Cloud project at [console.cloud.google.com](https://console.cloud.google.com)
+2. Enable the **Gmail API**
+3. Create **OAuth2 credentials** (Web application type)
+4. Add n8n's redirect URL: `https://your-n8n-instance/rest/oauth2-credential/callback`
+5. Configure the credential in n8n with your Client ID and Client Secret
