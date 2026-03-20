@@ -31,32 +31,48 @@
 ## 🏗️ Architecture
 
 ```mermaid
-flowchart LR
-    A["💬 Chat Trigger"] --> B["🤖 AI Agent\n(Intent Extraction)"]
-    B --> C["⚙️ Parse & Prepare\nFields"]
-    C --> D["🔍 Tavily Search\n(Market Size)"]
-    C --> E["🔍 Tavily Search\n(Trends)"]
-    D --> F["🔀 Merge Results"]
-    E --> F
-    F --> G["📊 Groq LLM\n(Market Fundamentals)"]
-    G --> H["🧠 Groq LLM\n(Consumer Intel)"]
-    H --> I["🎯 Groq LLM\n(Strategic Synthesis)"]
-    I --> J["📋 Report Assembly"]
-    J --> K["📧 Gmail Delivery"]
-    J --> L["🔗 Webhook Response"]
+flowchart TD
+    subgraph INGESTION ["📥 Ingestion Layer"]
+        A["💬 Chat Trigger\n(Webhook/UI)"] --> B["🤖 AI Agent\n(Intent Extraction)"]
+        B --> C["⚙️ Code: Parse & Prepare\nContext Variables"]
+    end
 
-    style A fill:#1a1a2e,stroke:#e63946,color:#fff
-    style B fill:#16213e,stroke:#0f3460,color:#fff
-    style C fill:#16213e,stroke:#0f3460,color:#fff
-    style D fill:#4F46E5,stroke:#3730A3,color:#fff
-    style E fill:#4F46E5,stroke:#3730A3,color:#fff
-    style F fill:#1a1a2e,stroke:#e63946,color:#fff
-    style G fill:#F55036,stroke:#DC2626,color:#fff
-    style H fill:#F55036,stroke:#DC2626,color:#fff
-    style I fill:#F55036,stroke:#DC2626,color:#fff
-    style J fill:#1a1a2e,stroke:#e63946,color:#fff
-    style K fill:#059669,stroke:#047857,color:#fff
-    style L fill:#059669,stroke:#047857,color:#fff
+    subgraph DISCOVERY ["🔍 Web Intelligence"]
+        C --> D["🌐 Tavily: Market Sizing\n(Advanced Search)"]
+        C --> E["🌐 Tavily: Consumer Data\n(Trend Analysis)"]
+        D --> F["🔀 Merge: Context Alignment\n(SQL Cross Join)"]
+        E --> F
+    end
+
+    subgraph ANALYSIS ["🧠 Analytical Engine"]
+        F --> G["📊 Groq: LLaMA 3.3\n(Market Fundamentals)"]
+        G --> H["🧠 Groq: LLaMA 3.3\n(Consumer Intelligence)"]
+        H --> I["🎯 Groq: LLaMA 3.3\n(Strategic Synthesis)"]
+    end
+
+    subgraph DELIVERY ["📤 Report Delivery"]
+        I --> J["📋 Code: HTML Assembly\n(Dynamic Formatting)"]
+        J --> K["📧 Gmail API\n(Instant Delivery)"]
+        J --> L["🔗 Webhook\n(API Integration)"]
+    end
+
+    style INGESTION fill:#0d1218,stroke:#4c1d95,color:#fff
+    style DISCOVERY fill:#0d1218,stroke:#1e3a5f,color:#fff
+    style ANALYSIS fill:#0d1218,stroke:#7c3aed,color:#fff
+    style DELIVERY fill:#0d1218,stroke:#059669,color:#fff
+    
+    style A fill:#1a1a2e,stroke:#4c1d95,color:#fff
+    style B fill:#1a1a2e,stroke:#4c1d95,color:#fff
+    style C fill:#1a1a2e,stroke:#4c1d95,color:#fff
+    style D fill:#1e3a5f,stroke:#4F46E5,color:#fff
+    style E fill:#1e3a5f,stroke:#4F46E5,color:#fff
+    style F fill:#1e3a5f,stroke:#4F46E5,color:#fff
+    style G fill:#2d1b3d,stroke:#7C3AED,color:#fff
+    style H fill:#2d1b3d,stroke:#7C3AED,color:#fff
+    style I fill:#2d1b3d,stroke:#7C3AED,color:#fff
+    style J fill:#1b3d2d,stroke:#059669,color:#fff
+    style K fill:#1b3d2d,stroke:#059669,color:#fff
+    style L fill:#1b3d2d,stroke:#059669,color:#fff
 ```
 
 ### Pipeline Stages
@@ -143,16 +159,46 @@ India's electric vehicle market encompasses battery electric vehicles (BEVs), hy
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️ Tech Stack & Toolkit
 
-| Component | Technology | Role |
-|-----------|-----------|------|
-| **Orchestration** | [n8n](https://n8n.io) | Workflow automation & node execution |
-| **Web Search** | [Tavily API](https://tavily.com) | Real-time market data retrieval |
-| **LLM Inference** | [Groq](https://groq.com) | Ultra-fast LLM API (< 500ms/call) |
-| **Language Model** | [LLaMA 3.3 70B](https://ai.meta.com/llama/) | Market analysis & synthesis |
-| **Intent Parsing** | n8n AI Agent | Natural language → structured fields |
-| **Delivery** | Gmail API | Formatted HTML report delivery |
+<div align="center">
+  <table style="width:100%; border-collapse: collapse; border: none;">
+    <tr>
+      <td width="33%" align="center">
+        <img src="https://img.icons8.com/external-flat-icons-inmotus-design/64/external-Workflow-workflow-flat-icons-inmotus-design.png" width="40" height="40"/><br/>
+        <h4>Orchestration</h4>
+        <p><b>n8n</b><br/>Multi-node workflow automation</p>
+      </td>
+      <td width="33%" align="center">
+        <img src="https://img.icons8.com/external-flaticons-flat-flat-icons/64/external-search-engine-digital-marketing-flaticons-flat-flat-icons.png" width="40" height="40"/><br/>
+        <h4>Web Intelligence</h4>
+        <p><b>Tavily Search API</b><br/>Real-time market discovery</p>
+      </td>
+      <td width="33%" align="center">
+        <img src="https://img.icons8.com/external-flat-icons-inmotus-design/64/external-Inference-artificial-intelligence-flat-icons-inmotus-design.png" width="40" height="40"/><br/>
+        <h4>Inference</h4>
+        <p><b>Groq API</b><br/>Ultra-fast LLM execution</p>
+      </td>
+    </tr>
+    <tr>
+      <td width="33%" align="center">
+        <img src="https://img.icons8.com/external-flat-icons-inmotus-design/64/external-Model-artificial-intelligence-flat-icons-inmotus-design.png" width="40" height="40"/><br/>
+        <h4>LLM Backbone</h4>
+        <p><b>LLaMA 3.3 70B</b><br/>Strategic market synthesis</p>
+      </td>
+      <td width="33%" align="center">
+        <img src="https://img.icons8.com/external-flat-icons-inmotus-design/64/external-Agent-artificial-intelligence-flat-icons-inmotus-design.png" width="40" height="40"/><br/>
+        <h4>Reasoning</h4>
+        <p><b>n8n AI Agent</b><br/>NLP intent extraction</p>
+      </td>
+      <td width="33%" align="center">
+        <img src="https://img.icons8.com/external-flat-icons-inmotus-design/64/external-Delivery-artificial-intelligence-flat-icons-inmotus-design.png" width="40" height="40"/><br/>
+        <h4>Delivery</h4>
+        <p><b>Gmail API</b><br/>Instant HTML reporting</p>
+      </td>
+    </tr>
+  </table>
+</div>
 
 ---
 

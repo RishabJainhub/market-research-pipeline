@@ -22,15 +22,15 @@
 The pipeline is a **16-node n8n workflow** that transforms a natural language query (e.g., *"Electric vehicles in India"*) into a structured 7-section market research report. It combines **real-time web intelligence** (Tavily) with **LLM analytical reasoning** (Groq + LLaMA 3.3 70B) through a sequential, context-building architecture.
 
 ```mermaid
-graph TD
-    subgraph INPUT ["🎯 Input Layer"]
+flowchart TD
+    subgraph INGESTION ["📥 Ingestion Layer"]
         A[Chat Trigger] --> B[AI Agent]
         C[Groq Chat Model] -.->|LLM Provider| B
         B --> D[JSON Parser]
         D --> E[Field Preparation]
     end
 
-    subgraph SEARCH ["🔍 Search Layer"]
+    subgraph DISCOVERY ["🔍 Search Layer"]
         E --> F[Tavily: Market Size]
         E --> G[Tavily: Consumer Trends]
         F --> H[SQL Merge]
@@ -53,10 +53,29 @@ graph TD
         P --> R[Webhook Response]
     end
 
-    style INPUT fill:#1a1a2e,stroke:#e63946,color:#fff
-    style SEARCH fill:#1e3a5f,stroke:#4F46E5,color:#fff
-    style ANALYSIS fill:#2d1b3d,stroke:#7C3AED,color:#fff
-    style OUTPUT fill:#1b3d2d,stroke:#059669,color:#fff
+    style INGESTION fill:#0d1218,stroke:#4c1d95,color:#fff
+    style DISCOVERY fill:#0d1218,stroke:#1e3a5f,color:#fff
+    style ANALYSIS fill:#0d1218,stroke:#7c3aed,color:#fff
+    style OUTPUT fill:#0d1218,stroke:#059669,color:#fff
+
+    style A fill:#1a1a2e,stroke:#4c1d95,color:#fff
+    style B fill:#1a1a2e,stroke:#4c1d95,color:#fff
+    style C fill:#1a1a2e,stroke:#4c1d95,color:#fff
+    style D fill:#1a1a2e,stroke:#4c1d95,color:#fff
+    style E fill:#1a1a2e,stroke:#4c1d95,color:#fff
+    style F fill:#1e3a5f,stroke:#4F46E5,color:#fff
+    style G fill:#1e3a5f,stroke:#4F46E5,color:#fff
+    style H fill:#1e3a5f,stroke:#4F46E5,color:#fff
+    style I fill:#2d1b3d,stroke:#7C3AED,color:#fff
+    style J fill:#2d1b3d,stroke:#7C3AED,color:#fff
+    style K fill:#2d1b3d,stroke:#7C3AED,color:#fff
+    style L fill:#2d1b3d,stroke:#7C3AED,color:#fff
+    style M fill:#2d1b3d,stroke:#7C3AED,color:#fff
+    style N fill:#2d1b3d,stroke:#7C3AED,color:#fff
+    style O fill:#2d1b3d,stroke:#7C3AED,color:#fff
+    style P fill:#1b3d2d,stroke:#059669,color:#fff
+    style Q fill:#1b3d2d,stroke:#059669,color:#fff
+    style R fill:#1b3d2d,stroke:#059669,color:#fff
 ```
 
 ---
@@ -221,7 +240,7 @@ The assembled report is sent to **two parallel outputs**:
 The pipeline uses **progressive context accumulation** — each LLM call receives the output of the previous call as additional context:
 
 ```mermaid
-flowchart LR
+flowchart TD
     subgraph Stage1 ["Stage 1: Market Fundamentals"]
         direction TB
         I1["📥 Input: Tavily search results"] --> P1["📝 Prompt: Produce Sections 1-3"]
@@ -242,9 +261,9 @@ flowchart LR
 
     Stage1 --> Stage2 --> Stage3
 
-    style Stage1 fill:#F55036,stroke:#DC2626,color:#fff
-    style Stage2 fill:#7C3AED,stroke:#5B21B6,color:#fff
-    style Stage3 fill:#059669,stroke:#047857,color:#fff
+    style Stage1 fill:#0d1218,stroke:#F55036,color:#fff
+    style Stage2 fill:#0d1218,stroke:#7C3AED,color:#fff
+    style Stage3 fill:#0d1218,stroke:#059669,color:#fff
 ```
 
 ### Why Chain Instead of Single Call?
