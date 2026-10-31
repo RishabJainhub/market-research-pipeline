@@ -1,0 +1,15 @@
+{
+  "description": "Autonomous market intelligence engine orchestrated with n8n, Groq LLaMA 3.3 70B, Tavily Search, and Perplexity Sonar. Delivers structured research dossiers in <60s.",
+  "topics": [
+    "n8n",
+    "agentic-workflows",
+    "groq",
+    "llama3",
+    "market-research",
+    "tavily",
+    "workflow-automation",
+    "ai-agents"
+  ],
+  "license": "MIT",
+  "default_branch": "main"
+}
